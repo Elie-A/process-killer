@@ -33,11 +33,10 @@ public class Utilities {
             BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
             while ((line = input.readLine()) != null) {
                 if (!line.trim().equals("")) {
-//                    System.out.println(line);
                     String lineSplit[] = line.split(",");
                     Vector<String> row = new Vector<>();
-                    for (int i = 0; i <= lineSplit.length - 1; i++) {
-                        row.add(lineSplit[i].replace("\"", ""));
+                    for (String split : lineSplit) {
+                        row.add(split.replace("\"", ""));
                     }
                     if (!row.isEmpty()) {
                         tableModel.addRow(row);
@@ -64,5 +63,17 @@ public class Utilities {
 
         sorter.setSortKeys(sortKeys);
         sorter.sort();
+    }
+    
+    public ArrayList<String> getProcessListWithName(String name, JTable table){
+        ArrayList<String> processList = new ArrayList<>();
+        
+        for (int i = 0; i <= table.getRowCount() - 1; i++){
+            if(table.getValueAt(i, 0).equals(name)){
+                processList.add((String) table.getValueAt(i, 0) + "|" + String.valueOf(table.getValueAt(i, 1)));
+            }
+        }
+        
+        return processList;
     }
 }

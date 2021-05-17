@@ -7,8 +7,9 @@ package processKiller.gui;
 
 import com.sun.glass.events.KeyEvent;
 import java.awt.Font;
+import java.io.IOException;
+import java.util.ArrayList;
 import javax.swing.JOptionPane;
-import javax.swing.table.DefaultTableModel;
 import processKiller.utilities.Utilities;
 
 /**
@@ -19,6 +20,8 @@ public class ProcessKillerGUI extends javax.swing.JFrame {
 
     boolean started = false;
     Thread getProcessThread;
+
+    ArrayList<String> list;
 
     Utilities utilities = new Utilities();
 
@@ -34,6 +37,7 @@ public class ProcessKillerGUI extends javax.swing.JFrame {
         pidRadioButton.setSelected(true);
         stopThreadBtn.setEnabled(false);
         killProcessBtn.setEnabled(false);
+        list = new ArrayList<>();
     }
 
     /**
@@ -95,7 +99,7 @@ public class ProcessKillerGUI extends javax.swing.JFrame {
             processTbl.getColumnModel().getColumn(4).setResizable(false);
         }
 
-        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(new javax.swing.border.LineBorder(new java.awt.Color(0, 0, 0), 1, true), "Controls", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Lucida Console", 1, 12))); // NOI18N
+        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(new javax.swing.border.LineBorder(new java.awt.Color(0, 0, 0), 1, true), "Controls", 0, 0, new java.awt.Font("Lucida Console", 1, 12))); // NOI18N
 
         getProcBtn.setFont(new java.awt.Font("Lucida Console", 1, 12)); // NOI18N
         getProcBtn.setText("Get Running Processes");
@@ -206,7 +210,7 @@ public class ProcessKillerGUI extends javax.swing.JFrame {
                     .addComponent(refreshRateTxt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
         );
 
-        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder(new javax.swing.border.LineBorder(new java.awt.Color(0, 0, 0), 1, true), "Logs", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Lucida Console", 1, 12))); // NOI18N
+        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder(new javax.swing.border.LineBorder(new java.awt.Color(0, 0, 0), 1, true), "Logs", 0, 0, new java.awt.Font("Lucida Console", 1, 12))); // NOI18N
 
         logsTxt.setColumns(20);
         logsTxt.setRows(5);
@@ -317,26 +321,32 @@ public class ProcessKillerGUI extends javax.swing.JFrame {
         } else if (imageNameRadioButton.isSelected()) {
             killCriteria = "IM";
         }
-        if(processTbl.getSelectedRow() == -1){
+        if (processTbl.getSelectedRow() == -1) {
             logsTxt.append("Error - please select a process from table" + "\n");
         }
         try {
+            String imageName = String.valueOf(processTbl.getValueAt(processTbl.getSelectedRow(), 0));
             if (killCriteria.contentEquals("PID")) {
-
-                String pid = String.valueOf(processTbl.getValueAt(processTbl.getSelectedRow(), 1));
-                Runtime.getRuntime().exec("taskkill /PID " + pid + " /F");
-                logsTxt.append("Killed Process " + processTbl.getValueAt(processTbl.getSelectedRow(), 0) + " by PID: " + pid + "\n");
+                list = utilities.getProcessListWithName(imageName, processTbl);
+                for (String processNamePID : list) {
+                    Runtime.getRuntime().exec("taskkill /PID " + processNamePID.split("\\|")[0] + " /F");
+                    logsTxt.append("Killed Process: " + processNamePID.split("\\|")[0] + " by PID: " + processNamePID.split("\\|")[1] + "\n");
+                }
                 utilities.listRunningProcesses(processTbl);
                 logsTxt.append("Refreshed process table" + "\n");
+                list.clear();
 
             } else if (killCriteria.contentEquals("IM")) {
-                String imageName = String.valueOf(processTbl.getValueAt(processTbl.getSelectedRow(), 0));
-                Runtime.getRuntime().exec("taskkill /IM " + imageName + " /F");
-                logsTxt.append("Killed Process " + imageName + " by IM" + "\n");
+                list = utilities.getProcessListWithName(imageName, processTbl);
+                for (String processNamePID : list) {
+                    Runtime.getRuntime().exec("taskkill /IM " + processNamePID.split("\\|")[0] + " /F");
+                    logsTxt.append("Killed Process " + processNamePID.split("\\|")[0] + " with PID: " + processNamePID.split("\\|")[1] + "\n");
+                }
                 utilities.listRunningProcesses(processTbl);
                 logsTxt.append("Refreshed process table" + "\n");
+                list.clear();
             }
-        } catch (Exception ex) {
+        } catch (IOException ex) {
             logsTxt.append("Class: ProcessKillerGUI - Function: killProcessBtn " + ex.toString() + "\n");
         }
     }//GEN-LAST:event_killProcessBtnActionPerformed
