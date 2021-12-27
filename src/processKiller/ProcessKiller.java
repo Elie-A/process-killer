@@ -16,7 +16,7 @@ import processKiller.gui.ProcessKillerGUI;
  */
 public class ProcessKiller {
 
-    public static void main(String[] args) { 
+    public static void main(String[] args) {
         ProcessKillerGUI processKillerGUI = new ProcessKillerGUI();
         processKillerGUI.setTitle("Process Killer GUI");
         processKillerGUI.setLocationRelativeTo(null);
